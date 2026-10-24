@@ -1,1 +1,162 @@
 
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOOKS RATING SIMULATOR</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10111b;color:white;font-family:Arial,sans-serif;padding:16px}
+main{max-width:520px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:23px;color:#ff65b5}
+.coins{color:#ffd166;font-weight:bold}
+.panel{background:#202234;border:1px solid #383a52;border-radius:20px;padding:16px;margin:14px 0}
+button{border:0;border-radius:12px;padding:13px;background:#343650;color:white;font-weight:bold;font-size:15px;cursor:pointer}
+button:active{transform:scale(.97)}
+.modes{display:flex;gap:10px}
+.modes button{flex:1}
+.active,.action{background:linear-gradient(120deg,#ff4da6,#805cff)}
+.character{background:radial-gradient(circle,#51456b,#242539);border-radius:16px;text-align:center;padding:24px 10px}
+.avatar{font-size:82px;transition:.15s}
+.rank{font-size:26px;font-weight:900;margin:8px}
+.muted{color:#aaaec4;font-size:12px}
+.progress{height:10px;background:#11121d;border-radius:20px;overflow:hidden;margin:12px 0}
+.bar{height:100%;width:0;background:linear-gradient(90deg,#6c8cff,#ff4da6)}
+.stats{display:flex;justify-content:space-between;font-size:12px;color:#b9bbd0}
+.action{width:100%;padding:18px;font-size:18px;margin-top:14px}
+.upgrade{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid #393a50}
+.upgrade:last-child{border:0}
+.upgrade small{display:block;color:#aaaec4;margin-top:5px}
+.upgrade button{min-width:90px;color:#ffd166}
+.bottom{display:flex;gap:10px}
+.bottom button{flex:1}
+#collection{display:none}
+.item{padding:10px;background:#303249;border-radius:10px;margin:7px 0}
+#message{text-align:center;color:#ffd166;min-height:22px;font-weight:bold}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div><b>⚡ LOOKS RATING</b><div class="muted">SIMULATOR</div></div>
+<div class="coins">🪙 <span id="coins">0</span></div>
+</header>
+
+<div class="panel">
+<h2 style="text-align:center">Выбери режим</h2>
+<div class="modes">
+<button id="boys" class="active" onclick="setMode('boys')">👑 BOYS</button>
+<button id="girls" onclick="setMode('girls')">💅 GIRLS</button>
+</div>
+</div>
+
+<div class="panel">
+<div class="character">
+<div class="avatar" id="avatar">🗿</div>
+<div class="rank" id="rank">SUB 3</div>
+<div class="muted" id="next">Следующий ранг: SUB 5</div>
+</div>
+<div class="stats" style="margin-top:14px"><span>Прогресс</span><span id="progressText">0 / 50</span></div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="stats"><span>Сила: <b id="power">1</b></span><span>Монет за тап: <b id="income">1</b></span></div>
+<button class="action" id="tap" onclick="tapAction()">🔨 ТАПНИ!</button>
+<div id="message"></div>
+</div>
+
+<div class="panel">
+<h3>🛠️ Улучшения</h3>
+<div id="upgrades"></div>
+</div>
+
+<div class="panel">
+<div class="bottom">
+<button onclick="daily()">🎁 Награда</button>
+<button onclick="showCollection()">🏆 Ранги</button>
+</div>
+<div id="collection"></div>
+<p class="muted" style="text-align:center">Игра автоматически сохраняется на устройстве.</p>
+</div>
+</main>
+
+<script>
+const ranks={
+boys:['SUB 3','SUB 5','LTN','MTN','HTN','CHAD','TRUE ADAM'],
+girls:['SUB 3','SUB 5','LTB','MTB','HTB','STACY','TRUE EVE']
+};
+const limits=[0,50,150,350,700,1300,2500];
+const defaults={coins:0,mode:'boys',points:0,rankIndex:0,power:0,boost:0,lastDaily:'',unlocked:{boys:[0],girls:[0]}};
+let s;
+try{s={...defaults,...JSON.parse(localStorage.getItem('looksRatingSave')||'{}')};}
+catch(e){s={...defaults};}
+s.unlocked=s.unlocked||{boys:[0],girls:[0]};
+function save(){localStorage.setItem('looksRatingSave',JSON.stringify(s));render();}
+function cost(type){return type==='power'?Math.floor(35*Math.pow(1.8,s.power)):Math.floor(50*Math.pow(1.75,s.boost));}
+function say(text){document.getElementById('message').textContent=text;setTimeout(()=>{document.getElementById('message').textContent='';},1800);}
+function setMode(m){s.mode=m;s.rankIndex=Math.min(s.rankIndex,6);save();}
+function tapAction(){
+s.coins+=1+s.boost;
+if(s.rankIndex<6){
+s.points+=1+s.power;
+while(s.rankIndex<6&&s.points>=limits[s.rankIndex+1]){
+s.rankIndex++;
+s.unlocked[s.mode]=s.unlocked[s.mode]||[0];
+if(!s.unlocked[s.mode].includes(s.rankIndex))s.unlocked[s.mode].push(s.rankIndex);
+say('🏆 Новый ранг: '+ranks[s.mode][s.rankIndex]+'!');
+}
+}
+const a=document.getElementById('avatar');
+a.style.transform='scale(1.15) rotate(-8deg)';
+setTimeout(()=>a.style.transform='',130);
+save();
+}
+function buy(type){
+const c=cost(type);
+if(s.coins<c){say('Не хватает монет!');return;}
+s.coins-=c;
+if(type==='power')s.power++;else s.boost++;
+say('Улучшение куплено!');
+save();
+}
+function daily(){
+const day=new Date().toLocaleDateString();
+if(s.lastDaily===day){say('Награду уже забрал!');return;}
+const reward=100+s.rankIndex*50;
+s.coins+=reward;s.lastDaily=day;
+save();say('🎁 Получено '+reward+' монет!');
+}
+function showCollection(){
+const el=document.getElementById('collection');
+if(el.style.display==='block'){el.style.display='none';return;}
+el.innerHTML='<h3>Коллекция рангов</h3>';
+['boys','girls'].forEach(m=>{
+el.innerHTML+='<b>'+m.toUpperCase()+'</b>';
+ranks[m].forEach((r,i)=>{
+const ok=(s.unlocked[m]||[0]).includes(i);
+el.innerHTML+='<div class="item">'+(ok?'🏆':'🔒')+' '+r+'</div>';
+});
+});
+el.style.display='block';
+}
+function render(){
+document.getElementById('coins').textContent=Math.floor(s.coins).toLocaleString();
+document.getElementById('boys').classList.toggle('active',s.mode==='boys');
+document.getElementById('girls').classList.toggle('active',s.mode==='girls');
+document.getElementById('avatar').textContent=s.mode==='boys'?'🗿':'💃';
+document.getElementById('rank').textContent=ranks[s.mode][s.rankIndex];
+document.getElementById('next').textContent=s.rankIndex===6?'МАКСИМАЛЬНЫЙ РАНГ':'Следующий ранг: '+ranks[s.mode][s.rankIndex+1];
+document.getElementById('progressText').textContent=s.rankIndex===6?'MAX':s.points+' / '+limits[s.rankIndex+1];
+document.getElementById('bar').style.width=(s.rankIndex===6?100:Math.min(100,s.points/limits[s.rankIndex+1]*100))+'%';
+document.getElementById('power').textContent=1+s.power;
+document.getElementById('income').textContent=1+s.boost;
+document.getElementById('tap').textContent=s.mode==='boys'?'🔨 ТАПНИ МОЛОТКОМ':'🧴 НАНЕСТИ КРЕМ';
+document.getElementById('upgrades').innerHTML=
+'<div class="upgrade"><div><b>'+(s.mode==='boys'?'🔨 Улучшить молоток':'🧴 Улучшить крем')+'</b><small>Сила тапа: '+(1+s.power)+'</small></div><button onclick="buy(\\'power\\')">🪙 '+cost('power')+'</button></div>'+
+'<div class="upgrade"><div><b>💰 Монетный бонус</b><small>Монет за тап: '+(1+s.boost)+'</small></div><button onclick="buy(\\'boost\\')">🪙 '+cost('boost')+'</button></div>';
+}
+render();
+</script>
+</body>
+  </html>
+
