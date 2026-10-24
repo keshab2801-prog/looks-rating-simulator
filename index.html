@@ -151,11 +151,14 @@ document.getElementById('bar').style.width=(s.rankIndex===6?100:Math.min(100,s.p
 document.getElementById('power').textContent=1+s.power;
 document.getElementById('income').textContent=1+s.boost;
 document.getElementById('tap').textContent=s.mode==='boys'?'🔨 ТАПНИ МОЛОТКОМ':'🧴 НАНЕСТИ КРЕМ';
-document.getElementById('upgrades').innerHTML=
-'<div class="upgrade"><div><b>'+(s.mode==='boys'?'🔨 Улучшить молоток':'🧴 Улучшить крем')+'</b><small>Сила тапа: '+(1+s.power)+'</small></div><button onclick="buy(\\'power\\')">🪙 '+cost('power')+'</button></div>'+
-'<div class="upgrade"><div><b>💰 Монетный бонус</b><small>Монет за тап: '+(1+s.boost)+'</small></div><button onclick="buy(\\'boost\\')">🪙 '+cost('boost')+'</button></div>';
-}
-render();
+  document.getElementById('upgrades').innerHTML =
+  '<div class="upgrade">' +
+  '<div><b>' + (s.mode === 'boys' ? '🔨 Улучшить молоток' : '🧴 Улучшить крем') +
+  '</b><small>Сила тапа: ' + (1 + s.power) + '</small></div>' +
+  '<button onclick="buy(&quot;power&quot;)">🪙 ' + cost('power') + '</button></div>' +
+  '<div class="upgrade"><div><b>💰 Монетный бонус</b>' +
+  '<small>Монет за тап: ' + (1 + s.boost) + '</small></div>' +
+  '<button onclick="buy(&quot;boost&quot;)">🪙 ' + cost('boost') + '</button></div>';
 </script>
 </body>
   </html>
